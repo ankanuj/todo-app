@@ -2,6 +2,7 @@ import { Component,} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Todo } from './todo.model';
+import { TodoService } from './todo.service';
 
 @Component({
   selector: 'app-todo',
@@ -11,12 +12,11 @@ import { Todo } from './todo.model';
 })
 export class TodoComponent {
   newTodoTitle = '';
-  todos: Todo[] = [];
-  deletedTodos: Todo[] = [];
-  completedTask: Todo[] = [];
   editTitle = '';
   editTodoId: number | null = null;
 
+  constructor(public todoService: TodoService){};
+  
   createTask(){
     if(!this.newTodoTitle.trim()) return;
 
@@ -26,31 +26,19 @@ export class TodoComponent {
         title: this.newTodoTitle,
         // completed: false,
       };
-    this.todos.push(newTodo);
+    this.todoService.addTodo(newTodo);
     this.newTodoTitle = '';
   }
 
-  removeTask(id: number){
-    let deleted = this.todos.find(todo => todo.id === id);
-    if(!deleted) return ; 
-    if(deleted){
-      this.deletedTodos.push({...deleted});
-    }
-    this.todos = this.todos.filter(todo => todo.id!==id)
+  completeTask(id: number){
+    this.todoService.markCompleted(id);
   }
-  markCompleted(id: number){
-    let compTask = this.todos.find(todo => todo.id === id);
-    if(!compTask) return;
-
-    this.todos = this.todos.filter(todo => todo.id !== id);
-    console.log(compTask);
-    if(compTask){
-      this.completedTask.push({...compTask});
-    }
+  
+  remove(id: number){
+    this.todoService.deleteTask(id);
   }
 
   editTodo(todo: Todo){
-    console.log(todo);
     this.editTodoId = todo.id;
     this.editTitle = todo.title;
   }
