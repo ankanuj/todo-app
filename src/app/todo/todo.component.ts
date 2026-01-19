@@ -16,17 +16,17 @@ export class TodoComponent {
   editTodoId: number | null = null;
 
   constructor(public todoService: TodoService){};
+
+  ngOnInit() {
+    this.todoService.loadTodosFromLocalStroage();
+    this.todoService.loadCompletedFromLocalStorage();
+    this.todoService.loadDeletedFromLocalStorage(); 
+  }
+
   
   createTask(){
     if(!this.newTodoTitle.trim()) return;
-
-    const newTodo: Todo =
-      {
-        id: Date.now(),
-        title: this.newTodoTitle,
-        // completed: false,
-      };
-    this.todoService.addTodo(newTodo);
+    this.todoService.addTodo(this.newTodoTitle);
     this.newTodoTitle = '';
   }
 
@@ -47,6 +47,7 @@ export class TodoComponent {
     if(!this.editTitle.trim()) return;
 
     todo.title = this.editTitle;
+    this.todoService.saveToLocalStorage();
     this.cancel();
   }
   cancel(){
