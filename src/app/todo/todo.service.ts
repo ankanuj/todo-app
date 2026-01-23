@@ -1,5 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Todo } from './todo.model';
+import { HttpClient } from '@angular/common/http';
+import { map, Observable } from 'rxjs';
+import { TodoStatus } from './todo.constants';
 
 @Injectable({
   providedIn: 'root'
@@ -9,70 +12,25 @@ export class TodoService {
     completedTasks: Todo[] = [];
     deletedTasks: Todo[] = [];
 
-    addTodo(todo:string) {
-        const newTodo: Todo = {
-            id: Date.now(),
-            title: todo,
-            // completed: false,
-        }
-        this.todos.push(newTodo);
-        this.saveToLocalStorage();
-    }
-    saveToLocalStorage(){
-        localStorage.setItem('todos', JSON.stringify(this.todos))
-    }
-    saveCompletedToLocalStorage(){
-        localStorage.setItem('completedTasks', JSON.stringify(this.completedTasks)); 
-    }
-    saveDeletedToLocalStorage(){
-        localStorage.setItem('deletedTasks', JSON.stringify(this.deletedTasks));
-    }    
-    loadTodosFromLocalStroage(){
-        const data = localStorage.getItem('todos')
-        if(data){
-            this.todos = JSON.parse(data);
-        }
-    }
-    loadCompletedFromLocalStorage(){
-        const data = localStorage.getItem('completedTasks');
-        if(data){
-            this.completedTasks = JSON.parse(data);
-        }
-    }
-    loadDeletedFromLocalStorage(){
-        const data = localStorage.getItem('deletedTasks');
-        if(data){
-            this.deletedTasks = JSON.parse(data);
-        }
-    }
-    markCompleted(id: number){
-        let compTask = this.todos.find(todo => todo.id === id);
-        if(!compTask) return;
-        this.todos = this.todos.filter(todo => todo.id !== id);
-        if(compTask){
-        this.completedTasks.push({...compTask});
-        this.saveToLocalStorage();
-        this.saveCompletedToLocalStorage();
-        }
-    }
-    deleteTask(id: number){
-        let deleted = this.todos.find(todo => todo.id === id);
-        if(!deleted) return ; 
-        if(deleted){
-        this.deletedTasks.push({...deleted});
-        }
-        this.todos = this.todos.filter(todo => todo.id!==id);
-        this.saveToLocalStorage();
-        this.saveDeletedToLocalStorage();
+    private API ='http://localhost:3000/todos';
+    private http = inject(HttpClient);
+
+    fetchTasks(): Observable<Todo[]>{
+        return this.http.get<Todo[]>(this.API).pipe(
+            map(todos => 
+                todos.map(todo => ({
+                    ...todo,
+                    status: todo.status ?? TodoStatus.todo
+                }))
+            )
+        );
     }
 
-    getTodos(){
-        return this.todos;
+    addTodo(todo: Todo): Observable<Todo[]> {        
+        console.log('Adding todo:', todo);  
+        return this.http.post<Todo[]>(this.API, todo);
     }
-    getCompletedTasks(){
-        return this.completedTasks;
-    }
-    getDeletedTasks(){
-        return this.deletedTasks;
+    updateTodo(id:number, todo: Partial<Todo>): Observable<Todo[]>{
+        return this.http.patch<Todo[]>(`${this.API}/${id}`, todo);
     }
 }

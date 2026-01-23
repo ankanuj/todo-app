@@ -1,0 +1,19 @@
+{
+  "todos": [
+    {
+      "id": 1769153474962,
+      "title": "New Task new new",
+      "status": "Completed"
+    },
+    {
+      "id": 1769158142147,
+      "title": "New Task",
+      "status": "Deleted"
+    },
+    {
+      "id": 1769180709881,
+      "title": "New Task Updated Task",
+      "status": "Completed"
+    }
+  ]
+}
